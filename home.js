@@ -1,16 +1,17 @@
 import { auth, database } from "./firebase-config.js";
-import { ref, set } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { ref, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-document.getElementById("info-form").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const userId = auth.currentUser.uid;
-  const name = document.getElementById("name").value;
-  const age = document.getElementById("age").value;
-  const profession = document.getElementById("profession").value;
+document.addEventListener("DOMContentLoaded", async () => {
+  const userId = auth.currentUser?.uid;
+  if (!userId) {
+    alert("Usuário não está autenticado!");
+    window.location.href = "index.html";
+    return;
+  }
 
-  set(ref(database, `users/${userId}`), {
-    name,
-    age,
-    profession,
-  }).then(() => alert("Informações salvas!"));
+  const snapshot = await get(ref(database, `users/${userId}`));
+  if (snapshot.exists()) {
+    const { name } = snapshot.val();
+    document.getElementById("welcome-message").textContent = `Bem-vindo à página home, ${name || "Usuário"}`;
+  }
 });
